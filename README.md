@@ -1,9 +1,4 @@
-# CSCI-GA 2572 Final Project
-
-## Overview
-
-In this project, you will train a JEPA world model on a set of pre-collected trajectories from a toy environment involving an agent in two rooms.
-
+# JEPA World Model
 
 ### JEPA
 
@@ -40,7 +35,7 @@ $$
 
 Where the Target Encoder $\text{Enc}\_\psi$ may be identical to Encoder $\text{Enc}\_\theta$ ([VicReg](https://arxiv.org/pdf/2105.04906), [Barlow Twins](https://arxiv.org/pdf/2103.03230)), or not ([BYOL](https://arxiv.org/pdf/2006.07733))
 
-$D(\tilde{s}\_n, s'\_n)$ is some "distance" function. However, minimizing the energy naively is problematic because it can lead to representation collapse (why?). There are techniques (such as ones mentioned above) to prevent this collapse by adding regularisers, contrastive samples, or specific architectural choices. Feel free to experiment.
+$D(\tilde{s}\_n, s'\_n)$ is some "distance" function. However, minimizing the energy naively is problematic because it can lead to representation collapse. There are techniques (such as ones mentioned above) to prevent this collapse by adding regularisers, contrastive samples, or specific architectural choices.
 
 Here's a diagram illustrating a recurrent JEPA for 4 timesteps:
 
@@ -49,21 +44,19 @@ Here's a diagram illustrating a recurrent JEPA for 4 timesteps:
 
 ### Environment and data set
 
-The dataset consists of random trajectories collected from a toy environment consisting of an agent (dot) in two rooms separated by a wall. There's a door in a wall.  The agent cannot travel through the border wall or middle wall (except through the door). Different trajectories may have different wall and door positions. Thus your JEPA model needs to be able to perceive and distinguish environment layouts. Two training trajectories with different layouts are depicted below.
+The dataset consists of random trajectories collected from a toy environment consisting of an agent (dot) in two rooms separated by a wall. There's a door in a wall.  The agent cannot travel through the border wall or middle wall (except through the door). Different trajectories may have different wall and door positions. Thus our JEPA model needs to be able to perceive and distinguish environment layouts. Two training trajectories with different layouts are depicted below.
 
 <img src="assets/two_rooms.png" alt="Alt Text" width="500"/>
 
 
 ### Task
 
-Your task is to implement and train a JEPA architecture on a dataset of 2.5M frames of exploratory trajectories (see images above). Then, your model will be evaluated based on how well the predicted representations will capture the true $(x, y)$ coordinate of the agent we'll call $(y\_1,y\_2)$. 
+Our task is to implement and train a JEPA architecture on a dataset of 2.5M frames of exploratory trajectories (see images above). Then, our model will be evaluated based on how well the predicted representations will capture the true $(x, y)$ coordinate of the agent we'll call $(y\_1,y\_2)$. 
 
 Here are the constraints:
-* It has to be a JEPA architecture - namely you have to train it by minimizing the distance between predictions and targets in the *representation space*, while preventing collapse.
-* You can try various methods of preventing collapse, **except** image reconstruction. That is - you cannot reconstruct target images as a part of your objective, such as in the case of [MAE](https://arxiv.org/pdf/2111.06377).
-* You have to rely only on the provided data in folder `/scratch/DL24FA/train`. However you are allowed to apply image augmentation.
-
-**Failing to meet the above constraints will result in deducted points or even zero points**
+* It has to be a JEPA architecture - namely we have to train it by minimizing the distance between predictions and targets in the *representation space*, while preventing collapse.
+* We can try various methods of preventing collapse, **except** image reconstruction. That is - we cannot reconstruct target images as a part of your objective, such as in the case of [MAE](https://arxiv.org/pdf/2111.06377).
+* We have to rely only on the provided data in folder `/scratch/DL24FA/train`. However we are allowed to apply image augmentation.
 
 ### Evaluation
 How do we evaluate the quality of our encoded and predicted representations?
@@ -79,11 +72,9 @@ $$
 
 The smaller the MSE loss on the probing validation dataset, the better our learned representations are at capturing the particular information we care about - in this case the agent location. (We can also probe for other things such as wall or door locations, but we only focus on agent location here).
 
-The evaluation code is already implemented, so you just need to plug in your trained model to run it.
+The evaluation script will train the prober on 170k frames of agent trajectories loaded from folder `/scratch/DL24FA/probe_normal/train`, and evaluate it on validation sets to report the mean-squared error between probed and true global agent coordinates. There will be two *known* validation sets loaded from folders `/scratch/DL24FA/probe_normal/val` and `/scratch/DL24FA/probe_wall/val`. The first validation set contains similar trajectories from the training set, while the second consists of trajectories with agent running straight towards the wall and sometimes door, this tests how well our model is able to learn the dynamics of stopping at the wall.
 
-The evaluation script will train the prober on 170k frames of agent trajectories loaded from folder `/scratch/DL24FA/probe_normal/train`, and evaluate it on validation sets to report the mean-squared error between probed and true global agent coordinates. There will be two *known* validation sets loaded from folders `/scratch/DL24FA/probe_normal/val` and `/scratch/DL24FA/probe_wall/val`. The first validation set contains similar trajectories from the training set, while the second consists of trajectories with agent running straight towards the wall and sometimes door, this tests how well your model is able to learn the dynamics of stopping at the wall.
-
-There are two other validation sets that are not released but will be used to test how good your model is for long-horizon predictions, and how well your model generalize to unseen novel layouts (detail: during training we exclude the wall from showing up at certain range of x-axes, we want to see how well your model performs when the wall is placed at those x-axes).
+There are two other validation sets that are not released but will be used to test how good our model is for long-horizon predictions, and how well your model generalize to unseen novel layouts (detail: during training we exclude the wall from showing up at certain range of x-axes, we want to see how well our model performs when the wall is placed at those x-axes).
 
 
 ### Competition criteria
@@ -138,14 +129,5 @@ DL_Final_Proj/
 ├── main.py    
 ├── evaluator.py    
 ├── ... (other files including your new ones)    
-├── model_weights.pth    
-└── team_name.txt  
+├── model_weights.pth     
 ```
-
-Make sure `main.py` is runnable with your trained model, including python command load your model weights. 
-
-team_name.txt contains the name of your team and members' NETIDs.
-
-Upload the zipped file to cloud storage and email the download link to TA wz1232@nyu.edu with subject line **"DL Final Project Submission. {Team Name}"**. The TA should be able to run `wget {link}`, unzip the folder, and run `python main.py` to get validation results. Failing to do so will result in substracted scores or even zero points. 
-
-**Submission deadline is 12/15**. Winners will be picked and asked to present their work on last class day 12/18.
